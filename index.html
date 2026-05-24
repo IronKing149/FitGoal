@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>FitGoal</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #080818;
+    --card: #12122a;
+    --border: #2a2a4a;
+    --accent: #00ff88;
+    --red: #ff6b6b;
+    --blue: #00bfff;
+    --purple: #a78bfa;
+    --orange: #ff6b00;
+    --gold: #ffd700;
+    --text: #ffffff;
+    --muted: #888888;
+    --dim: #555555;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Space Mono', monospace;
+    max-width: 420px;
+    margin: 0 auto;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  /* HEADER */
+  .header {
+    padding: 28px 24px 20px;
+    background: linear-gradient(180deg, #0d0d2b 0%, transparent 100%);
+    border-bottom: 1px solid var(--border);
+  }
+  .header-top { display: flex; justify-content: space-between; align-items: flex-start; }
+  .logo { font-family: 'Syne', sans-serif; font-size: 26px; font-weight: 800; line-height: 1.1; }
+  .logo span { color: var(--accent); }
+  .date { color: var(--dim); font-size: 10px; margin-top: 4px; letter-spacing: 2px; }
+  .streak-box {
+    display: flex; flex-direction: column; align-items: center;
+    background: var(--card); border-radius: 12px; padding: 10px 16px;
+    border: 1px solid var(--border);
+  }
+  .streak-num { font-weight: 700; font-size: 18px; color: var(--orange); }
+  .streak-label { color: var(--dim); font-size: 9px; letter-spacing: 1px; }
+  .motivational {
+    margin-top: 16px; padding: 12px 16px;
+    border-radius: 10px; font-size: 12px; letter-spacing: 0.5px;
+    text-align: center; transition: all 0.4s;
+  }
+  /* RINGS */
+  .rings-section {
+    display: flex; justify-content: space-around; align-items: center;
+    padding: 24px 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .rings-small { display: flex; flex-direction: column; gap: 16px; }
+  .ring-wrap { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  .ring-label { color: var(--muted); font-size: 10px; letter-spacing: 1px; text-transform: uppercase; }
+  /* TABS */
+  .tabs {
+    display: flex; border-bottom: 1px solid var(--border);
+    overflow-x: auto; scrollbar-width: none;
+  }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tab {
+    flex: 1; padding: 14px 8px; background: transparent; border: none;
+    border-bottom: 2px solid transparent; color: var(--dim);
+    font-size: 10px; font-family: 'Space Mono', monospace;
+    text-transform: uppercase; letter-spacing: 1px;
+    cursor: pointer; white-space: nowrap; transition: all 0.2s;
+  }
+  .tab.active { border-bottom-color: var(--accent); color: var(--accent); }
+  /* CONTENT */
+  .content { padding: 20px 20px 100px; }
+  .section-label { color: var(--dim); font-size: 10px; letter-spacing: 2px; margin-bottom: 16px; }
+  /* GOAL BOX */
+  .goal-box {
+    background: var(--card); border-radius: 14px; padding: 16px 18px;
+    border: 1px solid var(--border); margin-bottom: 20px;
+  }
+  .goal-title { color: var(--dim); font-size: 10px; letter-spacing: 2px; margin-bottom: 8px; }
+  .goal-text { font-size: 14px; font-weight: 700; }
+  .goal-row { display: flex; justify-content: space-between; align-items: center; }
+  .edit-btn {
+    background: transparent; border: 1px solid var(--border);
+    border-radius: 6px; padding: 4px 10px; color: var(--dim);
+    font-size: 11px; cursor: pointer; font-family: 'Space Mono', monospace;
+  }
+  .goal-input {
+    flex: 1; background: #0d0d2b; border: 1px solid var(--accent);
+    border-radius: 8px; padding: 8px 12px; color: #fff;
+    font-family: 'Space Mono', monospace; font-size: 13px;
+  }
+  .save-btn {
+    background: var(--accent); border: none; border-radius: 8px;
+    padding: 8px 14px; color: #000; font-weight: 700; cursor: pointer;
+    margin-left: 8px;
+  }
+  /* CARDS GRID */
+  .cards-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+  .mini-card {
+    background: var(--card); border-radius: 14px; padding: 16px;
+    border: 1px solid var(--border); transition: border-color 0.3s;
+  }
+  .mini-card-icon { font-size: 20px; margin-bottom: 6px; }
+  .mini-card-label { font-size: 11px; color: var(--dim); margin-bottom: 4px; }
+  .mini-card-pct { font-size: 22px; font-weight: 700; }
+  .mini-bar-bg { height: 3px; background: #1a1a3a; border-radius: 2px; margin-top: 8px; }
+  .mini-bar { height: 100%; border-radius: 2px; transition: width 0.6s ease; }
+  /* CHECK ITEMS */
+  .check-item {
+    display: flex; align-items: center; gap: 14px;
+    padding: 14px 18px; border-radius: 12px;
+    background: var(--card); border: 1px solid var(--border);
+    cursor: pointer; transition: all 0.25s ease;
+    margin-bottom: 8px; user-select: none;
+  }
+  .check-item.done { background: rgba(0,255,136,0.08); }
+  .check-item-icon { font-size: 22px; }
+  .check-item-label { flex: 1; font-size: 13px; color: var(--muted); transition: all 0.2s; }
+  .check-item.done .check-item-label { color: #fff; text-decoration: line-through; }
+  .check-item-time { color: var(--dim); margin-left: 8px; font-size: 11px; }
+  .checkbox {
+    width: 22px; height: 22px; border-radius: 6px;
+    border: 2px solid #3a3a5a; background: transparent;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s; flex-shrink: 0; font-size: 13px; font-weight: bold;
+  }
+  /* NOTE */
+  .note-area {
+    width: 100%; min-height: 90px;
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 12px; padding: 14px 16px;
+    color: #ccc; font-family: 'Space Mono', monospace;
+    font-size: 12px; resize: vertical; line-height: 1.6;
+  }
+  /* HISTORY BAR */
+  .history-bars { display: flex; align-items: flex-end; gap: 8px; height: 140px; margin-bottom: 8px; }
+  .bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  .bar-pct { font-size: 10px; color: var(--muted); min-height: 14px; }
+  .bar { width: 100%; border-radius: 6px; transition: height 0.5s ease; min-height: 4px; }
+  .bar-day { font-size: 10px; color: var(--dim); }
+  .bar-day.today { color: var(--accent); font-weight: 700; }
+  /* ACHIEVEMENTS */
+  .achievement {
+    display: flex; align-items: center; gap: 14px;
+    background: var(--card); border-radius: 12px; padding: 14px 16px;
+    border: 1px solid var(--border); margin-bottom: 8px;
+  }
+  .achievement-icon { font-size: 28px; }
+  .achievement-name { font-weight: 700; font-size: 14px; }
+  .achievement-sub { color: var(--dim); font-size: 11px; margin-top: 2px; }
+  /* TIP BOX */
+  .tip-box {
+    background: var(--card); border-radius: 14px; padding: 16px 18px;
+    border: 1px solid var(--border); margin-top: 24px;
+  }
+  .tip-title { color: var(--dim); font-size: 10px; letter-spacing: 2px; margin-bottom: 12px; }
+  .tip-text { color: #aaa; font-size: 12px; line-height: 1.7; }
+  /* BOTTOM BAR */
+  .bottom-bar {
+    position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+    width: 100%; max-width: 420px;
+    padding: 16px 20px;
+    background: linear-gradient(0deg, #080818 60%, transparent);
+  }
+  .bottom-card {
+    border-radius: 16px; padding: 14px 20px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .bottom-card-title { font-size: 13px; font-weight: 700; }
+  .bottom-card-sub { color: var(--dim); font-size: 11px; margin-top: 2px; }
+  .bottom-card-icon { font-size: 28px; }
+  /* CELEBRATE */
+  .celebrate {
+    position: fixed; inset: 0; z-index: 999; pointer-events: none;
+    display: flex; align-items: center; justify-content: center;
+    flex-direction: column; gap: 16px;
+    background: rgba(0,255,136,0.08); backdrop-filter: blur(2px);
+    opacity: 0; transition: opacity 0.5s;
+  }
+  .celebrate.show { opacity: 1; }
+  .celebrate-emoji { font-size: 80px; }
+  .celebrate-title { font-family: 'Syne', sans-serif; font-size: 28px; font-weight: 800; color: var(--gold); text-align: center; }
+  .celebrate-sub { color: #aaa; font-size: 13px; }
+  /* PAGE */
+  .page { display: none; }
+  .page.active { display: block; }
+  /* ADD PLACEHOLDER */
+  .add-placeholder {
+    margin-top: 16px; padding: 14px 18px;
+    background: var(--card); border-radius: 12px;
+    border: 1px dashed var(--border);
+    text-align: center; color: #444; font-size: 12px;
+  }
+</style>
+</head>
+<body>
+
+<!-- CELEBRATE -->
+<div class="celebrate" id="celebrate">
+  <div class="celebrate-emoji">🏆</div>
+  <div class="celebrate-title">DIA 100%!</div>
+  <div class="celebrate-sub" id="celebrate-sub">Sequência: 5 dias</div>
+</div>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-top">
+    <div>
+      <div class="logo">FIT<span>GOAL</span></div>
+      <div class="date" id="today-date"></div>
+    </div>
+    <div class="streak-box">
+      <span style="font-size:20px">🔥</span>
+      <span class="streak-num" id="streak-num">4</span>
+      <span class="streak-label">STREAK</span>
+    </div>
+  </div>
+  <div class="motivational" id="motivational"></div>
+</div>
+
+<!-- RINGS -->
+<div class="rings-section">
+  <div class="ring-wrap">
+    <svg width="130" height="130" id="ring-total-svg" style="transform:rotate(-90deg)">
+      <circle cx="65" cy="65" r="59" fill="none" stroke="#1a1a2e" stroke-width="12"/>
+      <circle id="ring-total" cx="65" cy="65" r="59" fill="none" stroke="#00ff88" stroke-width="12"
+        stroke-dasharray="370.7" stroke-dashoffset="370.7" stroke-linecap="round" style="transition:stroke-dashoffset 0.6s ease"/>
+      <text id="ring-total-txt" x="65" y="72" text-anchor="middle" fill="#fff" font-size="22" font-weight="700"
+        font-family="Space Mono,monospace" style="transform:rotate(90deg);transform-origin:65px 65px">0%</text>
+    </svg>
+    <span class="ring-label">Total</span>
+  </div>
+  <div class="rings-small">
+    <div class="ring-wrap">
+      <svg width="80" height="80" style="transform:rotate(-90deg)">
+        <circle cx="40" cy="40" r="36" fill="none" stroke="#1a1a2e" stroke-width="8"/>
+        <circle id="ring-w" cx="40" cy="40" r="36" fill="none" stroke="#ff6b6b" stroke-width="8"
+          stroke-dasharray="226.2" stroke-dashoffset="226.2" stroke-linecap="round" style="transition:stroke-dashoffset 0.6s ease"/>
+        <text id="ring-w-txt" x="40" y="44" text-anchor="middle" fill="#fff" font-size="14" font-weight="700"
+          font-family="Space Mono,monospace" style="transform:rotate(90deg);transform-origin:40px 40px">0%</text>
+      </svg>
+      <span class="ring-label" style="font-size:9px">Treino</span>
+    </div>
+    <div class="ring-wrap">
+      <svg width="80" height="80" style="transform:rotate(-90deg)">
+        <circle cx="40" cy="40" r="36" fill="none" stroke="#1a1a2e" stroke-width="8"/>
+        <circle id="ring-m" cx="40" cy="40" r="36" fill="none" stroke="#00bfff" stroke-width="8"
+          stroke-dasharray="226.2" stroke-dashoffset="226.2" stroke-linecap="round" style="transition:stroke-dashoffset 0.6s ease"/>
+        <text id="ring-m-txt" x="40" y="44" text-anchor="middle" fill="#fff" font-size="14" font-weight="700"
+          font-family="Space Mono,monospace" style="transform:rotate(90deg);transform-origin:40px 40px">0%</text>
+      </svg>
+      <span class="ring-label" style="font-size:9px">Dieta</span>
+    </div>
+    <div class="ring-wrap">
+      <svg width="80" height="80" style="transform:rotate(-90deg)">
+        <circle cx="40" cy="40" r="36" fill="none" stroke="#1a1a2e" stroke-width="8"/>
+        <circle id="ring-h" cx="40" cy="40" r="36" fill="none" stroke="#a78bfa" stroke-width="8"
+          stroke-dasharray="226.2" stroke-dashoffset="226.2" stroke-linecap="round" style="transition:stroke-dashoffset 0.6s ease"/>
+        <text id="ring-h-txt" x="40" y="44" text-anchor="middle" fill="#fff" font-size="14" font-weight="700"
+          font-family="Space Mono,monospace" style="transform:rotate(90deg);transform-origin:40px 40px">0%</text>
+      </svg>
+      <span class="ring-label" style="font-size:9px">Hábitos</span>
+    </div>
+  </div>
+</div>
+
+<!-- TABS -->
+<div class="tabs">
+  <button class="tab active" onclick="showTab('hoje',this)">Hoje</button>
+  <button class="tab" onclick="showTab('treino',this)">Treino</button>
+  <button class="tab" onclick="showTab('dieta',this)">Dieta</button>
+  <button class="tab" onclick="showTab('habitos',this)">Hábitos</button>
+  <button class="tab" onclick="showTab('historico',this)">Histórico</button>
+</div>
+
+<!-- CONTENT -->
+<div class="content">
+
+  <!-- HOJE -->
+  <div class="page active" id="page-hoje">
+    <div class="goal-box">
+      <div class="goal-title">🎯 MEU OBJETIVO</div>
+      <div class="goal-row" id="goal-display-row">
+        <span class="goal-text" id="goal-text">Perder 8kg em 3 meses</span>
+        <button class="edit-btn" onclick="editGoal()">editar</button>
+      </div>
+      <div id="goal-edit-row" style="display:none;display:none">
+        <div style="display:flex;gap:8px">
+          <input class="goal-input" id="goal-input" value="Perder 8kg em 3 meses">
+          <button class="save-btn" onclick="saveGoal()">✓</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-label">⚡ RESUMO DO DIA</div>
+    <div class="cards-grid">
+      <div class="mini-card" id="card-treino">
+        <div class="mini-card-icon">💪</div>
+        <div class="mini-card-label">Treino</div>
+        <div class="mini-card-pct" id="card-w-pct" style="color:#ff6b6b">0%</div>
+        <div class="mini-bar-bg"><div class="mini-bar" id="bar-w" style="width:0%;background:#ff6b6b"></div></div>
+      </div>
+      <div class="mini-card" id="card-dieta">
+        <div class="mini-card-icon">🥗</div>
+        <div class="mini-card-label">Dieta</div>
+        <div class="mini-card-pct" id="card-m-pct" style="color:#00bfff">0%</div>
+        <div class="mini-bar-bg"><div class="mini-bar" id="bar-m" style="width:0%;background:#00bfff"></div></div>
+      </div>
+      <div class="mini-card" id="card-habitos">
+        <div class="mini-card-icon">⚡</div>
+        <div class="mini-card-label">Hábitos</div>
+        <div class="mini-card-pct" id="card-h-pct" style="color:#a78bfa">0%</div>
+        <div class="mini-bar-bg"><div class="mini-bar" id="bar-h" style="width:0%;background:#a78bfa"></div></div>
+      </div>
+      <div class="mini-card" id="card-geral">
+        <div class="mini-card-icon">🏆</div>
+        <div class="mini-card-label">Geral</div>
+        <div class="mini-card-pct" id="card-t-pct" style="color:#00ff88">0%</div>
+        <div class="mini-bar-bg"><div class="mini-bar" id="bar-t" style="width:0%;background:#00ff88"></div></div>
+      </div>
+    </div>
+
+    <div class="section-label">📝 NOTA DO DIA</div>
+    <textarea class="note-area" id="note-area" placeholder="Como você está se sentindo hoje? O que pode melhorar?"></textarea>
+  </div>
+
+  <!-- TREINO -->
+  <div class="page" id="page-treino">
+    <div class="section-label">💪 TREINO DE HOJE</div>
+    <div id="list-workout"></div>
+    <div class="add-placeholder">+ Adicionar exercício (em breve)</div>
+  </div>
+
+  <!-- DIETA -->
+  <div class="page" id="page-dieta">
+    <div class="section-label">🥗 REFEIÇÕES DO DIA</div>
+    <div id="list-meals"></div>
+  </div>
+
+  <!-- HÁBITOS -->
+  <div class="page" id="page-habitos">
+    <div class="section-label">⚡ HÁBITOS DIÁRIOS</div>
+    <div id="list-habits"></div>
+    <div class="tip-box">
+      <div class="tip-title">💡 DICA DO DIA</div>
+      <div class="tip-text">A consistência bate a perfeição. Um dia de 80% é melhor do que esperar o dia perfeito que nunca chega. Cada check é um tijolo da sua melhor versão. 🧱</div>
+    </div>
+  </div>
+
+  <!-- HISTÓRICO -->
+  <div class="page" id="page-historico">
+    <div class="section-label">📊 ÚLTIMOS 7 DIAS</div>
+    <div class="history-bars" id="history-bars"></div>
+    <div style="margin-top:24px">
+      <div class="section-label">🏅 CONQUISTAS</div>
+      <div class="achievement">
+        <div class="achievement-icon">🔥</div>
+        <div>
+          <div class="achievement-name" style="color:#ff6b00" id="ach-streak">4 dias seguidos</div>
+          <div class="achievement-sub">Sequência atual</div>
+        </div>
+      </div>
+      <div class="achievement">
+        <div class="achievement-icon">💯</div>
+        <div>
+          <div class="achievement-name" style="color:#ffd700">2 dias perfeitos</div>
+          <div class="achievement-sub">100% completado</div>
+        </div>
+      </div>
+      <div class="achievement">
+        <div class="achievement-icon">📈</div>
+        <div>
+          <div class="achievement-name" style="color:#00bfff">Média: 72%</div>
+          <div class="achievement-sub">Nos últimos 7 dias</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- BOTTOM BAR -->
+<div class="bottom-bar" id="bottom-bar">
+  <div class="bottom-card" id="bottom-card">
+    <div>
+      <div class="bottom-card-title" id="bottom-title">Falta 100% pro dia perfeito</div>
+      <div class="bottom-card-sub" id="bottom-sub">0 itens pendentes</div>
+    </div>
+    <div class="bottom-card-icon" id="bottom-icon">⚡</div>
+  </div>
+</div>
+
+<script>
+const WORKOUT = [
+  { id:'w1', label:'Aquecimento', icon:'🔥', done:false },
+  { id:'w2', label:'Treino principal', icon:'💪', done:false },
+  { id:'w3', label:'Cardio / HIIT', icon:'🏃', done:false },
+  { id:'w4', label:'Alongamento', icon:'🧘', done:false },
+];
+const MEALS = [
+  { id:'m1', label:'Café da manhã', icon:'🥣', time:'07:00', done:false },
+  { id:'m2', label:'Lanche da manhã', icon:'🍎', time:'10:00', done:false },
+  { id:'m3', label:'Almoço', icon:'🥗', time:'13:00', done:false },
+  { id:'m4', label:'Lanche da tarde', icon:'🥜', time:'16:00', done:false },
+  { id:'m5', label:'Jantar', icon:'🍽️', time:'19:30', done:false },
+  { id:'m6', label:'Ceia', icon:'🫐', time:'21:30', done:false },
+];
+const HABITS = [
+  { id:'h1', label:'2L de água', icon:'💧', done:false },
+  { id:'h2', label:'Dormir 8h', icon:'😴', done:false },
+  { id:'h3', label:'Sem açúcar', icon:'🚫', done:false },
+  { id:'h4', label:'Sem ultraprocessados', icon:'🥦', done:false },
+];
+const HISTORY = [85,60,100,75,90,45,0];
+const DAYS = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+const todayIdx = new Date().getDay();
+let streak = 4;
+let celebrated = false;
+
+// Load saved state
+function load() {
+  try {
+    const s = JSON.parse(localStorage.getItem('fitgoal') || '{}');
+    const today = new Date().toDateString();
+    if (s.date !== today) return; // new day, reset
+    WORKOUT.forEach(i => { if (s.w && s.w[i.id] !== undefined) i.done = s.w[i.id]; });
+    MEALS.forEach(i => { if (s.m && s.m[i.id] !== undefined) i.done = s.m[i.id]; });
+    HABITS.forEach(i => { if (s.h && s.h[i.id] !== undefined) i.done = s.h[i.id]; });
+    if (s.goal) document.getElementById('goal-text').textContent = s.goal;
+    if (s.goal) document.getElementById('goal-input').value = s.goal;
+    if (s.note) document.getElementById('note-area').value = s.note;
+    if (s.streak) streak = s.streak;
+  } catch(e) {}
+}
+function save() {
+  const w = {}, m = {}, h = {};
+  WORKOUT.forEach(i => w[i.id] = i.done);
+  MEALS.forEach(i => m[i.id] = i.done);
+  HABITS.forEach(i => h[i.id] = i.done);
+  localStorage.setItem('fitgoal', JSON.stringify({
+    date: new Date().toDateString(),
+    w, m, h,
+    goal: document.getElementById('goal-text').textContent,
+    note: document.getElementById('note-area').value,
+    streak
+  }));
+}
+
+function pct(arr) { return Math.round(arr.filter(i=>i.done).length/arr.length*100); }
+
+function getAccent(total) {
+  if (total===100) return '#ffd700';
+  if (total>=75) return '#00ff88';
+  if (total>=50) return '#00bfff';
+  return '#ff6b6b';
+}
+
+function setRing(id, txtId, pctVal, circ, color) {
+  const el = document.getElementById(id);
+  const txt = document.getElementById(txtId);
+  const offset = circ - (pctVal/100)*circ;
+  el.style.strokeDashoffset = offset;
+  el.setAttribute('stroke', color);
+  txt.textContent = pctVal+'%';
+}
+
+function update() {
+  const wP = pct(WORKOUT), mP = pct(MEALS), hP = pct(HABITS);
+  const total = Math.round((wP+mP+hP)/3);
+  const accent = getAccent(total);
+
+  setRing('ring-total','ring-total-txt',total,370.7,accent);
+  setRing('ring-w','ring-w-txt',wP,226.2,'#ff6b6b');
+  setRing('ring-m','ring-m-txt',mP,226.2,'#00bfff');
+  setRing('ring-h','ring-h-txt',hP,226.2,'#a78bfa');
+
+  // Mini cards
+  document.getElementById('card-w-pct').textContent = wP+'%';
+  document.getElementById('card-m-pct').textContent = mP+'%';
+  document.getElementById('card-h-pct').textContent = hP+'%';
+  document.getElementById('card-t-pct').textContent = total+'%';
+  document.getElementById('card-t-pct').style.color = accent;
+  document.getElementById('bar-w').style.width = wP+'%';
+  document.getElementById('bar-m').style.width = mP+'%';
+  document.getElementById('bar-h').style.width = hP+'%';
+  document.getElementById('bar-t').style.width = total+'%';
+  document.getElementById('bar-t').style.background = accent;
+
+  // Motivational
+  const msgs = {
+    100: '🏆 DIA PERFEITO! Você arrasou!',
+    75: '🔥 Quase lá! Continue assim!',
+    50: '💪 Boa! Metade do caminho feito.',
+    25: '⚡ Bora! Você ainda tem tempo hoje.',
+    0: '🌅 Novo dia, nova chance. Vai com tudo!'
+  };
+  const mot = document.getElementById('motivational');
+  const msg = total===100?msgs[100]:total>=75?msgs[75]:total>=50?msgs[50]:total>=25?msgs[25]:msgs[0];
+  mot.textContent = msg;
+  mot.style.background = accent+'15';
+  mot.style.border = '1px solid '+accent+'40';
+  mot.style.color = accent;
+
+  // Bottom bar
+  const pending = [...WORKOUT,...MEALS,...HABITS].filter(i=>!i.done).length;
+  const bb = document.getElementById('bottom-bar');
+  if (total===100) { bb.style.display='none'; } else {
+    bb.style.display='block';
+    document.getElementById('bottom-title').textContent = 'Falta '+(100-total)+'% pro dia perfeito';
+    document.getElementById('bottom-sub').textContent = pending+' itens pendentes';
+    document.getElementById('bottom-icon').textContent = total>=75?'🔥':total>=50?'💪':'⚡';
+    const bc = document.getElementById('bottom-card');
+    bc.style.background = accent+'15';
+    bc.style.border = '1px solid '+accent+'40';
+    bc.style.borderRadius = '16px';
+  }
+
+  // Celebrate
+  if (total===100 && !celebrated) {
+    celebrated = true;
+    streak++;
+    document.getElementById('streak-num').textContent = streak;
+    document.getElementById('celebrate-sub').textContent = 'Sequência: '+streak+' dias';
+    document.getElementById('ach-streak').textContent = streak+' dias seguidos';
+    const cel = document.getElementById('celebrate');
+    cel.classList.add('show');
+    setTimeout(()=>cel.classList.remove('show'), 3000);
+  }
+
+  save();
+}
+
+function renderList(containerId, arr, accentColor) {
+  const el = document.getElementById(containerId);
+  el.innerHTML = arr.map(item => `
+    <div class="check-item ${item.done?'done':''}" onclick="toggle('${item.id}')"
+      style="${item.done?'background:'+accentColor+'15;border-color:'+accentColor:''}">
+      <span class="check-item-icon">${item.icon}</span>
+      <span class="check-item-label">${item.label}${item.time?'<span class="check-item-time">'+item.time+'</span>':''}</span>
+      <div class="checkbox" style="${item.done?'background:'+accentColor+';border-color:'+accentColor:''}">
+        ${item.done?'<span style="color:#000">✓</span>':''}
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderHistory() {
+  const el = document.getElementById('history-bars');
+  const colors = v => v===100?'#ffd700':v>=75?'#00ff88':v>=50?'#00bfff':v>0?'#ff6b6b':'#1a1a3a';
+  el.innerHTML = HISTORY.map((v,i) => `
+    <div class="bar-col">
+      <span class="bar-pct" style="color:${colors(v)}">${v>0?v+'%':''}</span>
+      <div style="width:100%;display:flex;align-items:flex-end;flex:1">
+        <div class="bar" style="height:${Math.max(v,4)}%;background:${colors(v)};${i===todayIdx?'border:1px solid #00ff88':''}"></div>
+      </div>
+      <span class="bar-day ${i===todayIdx?'today':''}">${DAYS[i]}</span>
+    </div>
+  `).join('');
+}
+
+function toggle(id) {
+  const all = [...WORKOUT,...MEALS,...HABITS];
+  const item = all.find(i=>i.id===id);
+  if (!item) return;
+  item.done = !item.done;
+  renderList('list-workout', WORKOUT, '#ff6b6b');
+  renderList('list-meals', MEALS, '#00bfff');
+  renderList('list-habits', HABITS, '#a78bfa');
+  update();
+}
+
+function showTab(name, btn) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  btn.classList.add('active');
+}
+
+function editGoal() {
+  document.getElementById('goal-display-row').style.display='none';
+  document.getElementById('goal-edit-row').style.display='block';
+  document.getElementById('goal-input').focus();
+}
+function saveGoal() {
+  const val = document.getElementById('goal-input').value;
+  document.getElementById('goal-text').textContent = val || 'Meu objetivo';
+  document.getElementById('goal-display-row').style.display='flex';
+  document.getElementById('goal-edit-row').style.display='none';
+  save();
+}
+
+// Date
+const now = new Date();
+document.getElementById('today-date').textContent =
+  now.toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long'}).toUpperCase();
+
+document.getElementById('streak-num').textContent = streak;
+document.getElementById('ach-streak').textContent = streak+' dias seguidos';
+document.getElementById('note-area').addEventListener('input', save);
+
+load();
+renderList('list-workout', WORKOUT, '#ff6b6b');
+renderList('list-meals', MEALS, '#00bfff');
+renderList('list-habits', HABITS, '#a78bfa');
+renderHistory();
+update();
+</script>
+</body>
+</html>
